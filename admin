@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>لوحة إدارة دليل الحاج</title>
     
+    <!-- الخطوط والأيقونات -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -232,7 +233,7 @@
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 
         /* =================================================================
-           استجابة
+           استجابة للجوال
         ================================================================= */
         @media (max-width: 768px) {
             .sidebar { width: 60px; padding: 15px 0; }
@@ -285,8 +286,15 @@
     ========================================================= -->
     <main class="main-content" id="adminContent">
         <header class="topbar">
-            <div class="greeting"><h2>👋 مرحباً، مدير الحج</h2><p id="currentDate">اليوم،</p></div>
+            <div class="greeting">
+                <h2>👋 مرحباً، مدير الحج</h2>
+                <p id="currentDate">اليوم،</p>
+            </div>
             <div class="actions">
+                <!-- ★ الرابط المعدل للتطبيق الرئيسي ★ -->
+                <a href="https://hussamhamami8-cmd.github.io/alhaj/" target="_blank" class="btn-primary" style="text-decoration:none;">
+                    <i class="fas fa-external-link-alt"></i> فتح التطبيق
+                </a>
                 <span class="date-badge"><i class="far fa-calendar-alt"></i> <span id="hijriDate">تحميل...</span></span>
                 <button class="btn-outline" onclick="loadPilgrims()"><i class="fas fa-sync-alt"></i> تحديث</button>
                 <button class="btn-primary" onclick="openAddModal()"><i class="fas fa-plus"></i> إضافة حاج</button>
@@ -333,22 +341,18 @@
     ========================================================= -->
     <div class="modal-overlay" id="locationModal">
         <div class="modal-box map-modal">
-            <!-- رأس المودال -->
             <div class="map-header">
                 <h2><i class="fas fa-map-marked-alt"></i> موقع الحاج</h2>
                 <button class="close-modal" onclick="closeModal('locationModal')">&times;</button>
             </div>
             
-            <!-- شريط أدوات الخريطة -->
             <div class="map-toolbar">
                 <input type="text" class="search-input" id="mapSearchInput" placeholder="🔍 ابحث عن مكان (مكة، الحرم، ...)" onkeydown="if(event.key==='Enter') searchLocation()">
                 <button class="btn-icon gold" onclick="searchLocation()" title="بحث"><i class="fas fa-search"></i></button>
             </div>
             
-            <!-- الخريطة -->
             <div id="locationMap"></div>
             
-            <!-- تذييل المودال -->
             <div class="map-footer">
                 <div class="address-info">
                     <i class="fas fa-location-dot"></i>
@@ -385,10 +389,8 @@
 
         let allPilgrims = [];
         let currentLocationPilgrimId = null;
-        let currentLocationName = '';
         let map = null, marker = null;
         let currentLat = null, currentLng = null;
-        let hasExistingLocation = false;
 
         // =================================================================
         // 2. التاريخ
@@ -396,7 +398,9 @@
         function updateDateTime() {
             const now = new Date();
             document.getElementById('currentDate').textContent = now.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
-            try { document.getElementById('hijriDate').textContent = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', { day: 'numeric', month: 'long', year: 'numeric' }).format(now); } catch(e) { document.getElementById('hijriDate').textContent = '--'; }
+            try {
+                document.getElementById('hijriDate').textContent = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', { day: 'numeric', month: 'long', year: 'numeric' }).format(now);
+            } catch(e) { document.getElementById('hijriDate').textContent = '--'; }
         }
 
         // =================================================================
@@ -420,7 +424,7 @@
                 renderTable(allPilgrims);
                 updateStats(allPilgrims);
                 document.getElementById('sideBadge').textContent = allPilgrims.length;
-            } catch (e) { 
+            } catch (e) {
                 tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:#e53e3e;"><i class="fas fa-exclamation-triangle"></i> ${e.message}</td></tr>`;
                 showToast('❌ ' + e.message, true);
             }
@@ -535,32 +539,25 @@
         }
 
         // =================================================================
-        // 5. الخريطة - عرض موقع الحاج فقط (بدون تحديد موقع المدير)
+        // 5. الخريطة – عرض موقع الحاج فقط + زر خرائط جوجل
         // =================================================================
         function openLocationModal(id, name) {
             currentLocationPilgrimId = id;
-            currentLocationName = name;
-            hasExistingLocation = false;
-            
             document.getElementById('locPilgrimName').textContent = '📍 الحاج: ' + name;
             document.getElementById('locLat').value = '';
             document.getElementById('locLng').value = '';
             document.getElementById('selectedAddress').textContent = 'جاري تحميل الموقع...';
             
-            // تعطيل زر جوجل مابس مؤقتاً
             document.getElementById('googleMapsBtn').classList.add('disabled');
-            
             document.getElementById('locationModal').classList.add('show');
 
             setTimeout(() => {
                 if (map) map.remove();
-                
                 map = L.map('locationMap').setView([21.4225, 39.8262], 6);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
                     attribution: '© OpenStreetMap' 
                 }).addTo(map);
 
-                // جلب موقع الحاج من قاعدة البيانات
                 supabase
                     .from('pilgrim_locations')
                     .select('*')
@@ -578,19 +575,13 @@
                             const lng = parseFloat(data.longitude);
                             currentLat = lat;
                             currentLng = lng;
-                            hasExistingLocation = true;
                             
                             document.getElementById('locLat').value = lat;
                             document.getElementById('locLng').value = lng;
                             document.getElementById('selectedAddress').textContent = `📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-                            
-                            // تفعيل زر جوجل مابس
                             document.getElementById('googleMapsBtn').classList.remove('disabled');
                             
-                            // حرك الخريطة على موقع الحاج
                             map.setView([lat, lng], 15);
-                            
-                            // علامة مميزة للحاج
                             marker = L.marker([lat, lng], {
                                 icon: L.divIcon({
                                     className: 'custom-marker',
@@ -600,7 +591,6 @@
                                 })
                             }).addTo(map);
                             
-                            // دائرة حول الموقع
                             L.circle([lat, lng], {
                                 color: '#c99625',
                                 fillColor: '#c99625',
@@ -615,24 +605,20 @@
                         }
                     });
 
-                // عند النقر على الخريطة (لتعديل الموقع)
                 map.on('click', function(e) {
                     const lat = e.latlng.lat;
                     const lng = e.latlng.lng;
                     currentLat = lat;
                     currentLng = lng;
-                    hasExistingLocation = true;
                     
                     document.getElementById('locLat').value = lat.toFixed(6);
                     document.getElementById('locLng').value = lng.toFixed(6);
                     document.getElementById('selectedAddress').textContent = `📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-                    
-                    // تفعيل زر جوجل مابس
                     document.getElementById('googleMapsBtn').classList.remove('disabled');
                     
                     if (marker) map.removeLayer(marker);
                     marker = L.marker([lat, lng]).addTo(map);
-                    showToast('📍 تم تحديد موقع جديد للحاج، اضغط حفظ');
+                    showToast('📍 تم تحديد موقع جديد، اضغط حفظ');
                 });
 
             }, 300);
@@ -666,7 +652,7 @@
         }
 
         // =================================================================
-        // 7. فتح الموقع في خرائط جوجل (الزر الجديد)
+        // 7. فتح الموقع في خرائط جوجل
         // =================================================================
         function openInGoogleMaps() {
             const lat = parseFloat(document.getElementById('locLat').value);
@@ -677,20 +663,18 @@
                 return;
             }
             
-            // فتح خرائط جوجل في تطبيق الهاتف أو المتصفح
             const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
             window.open(url, '_blank');
             showToast('🗺️ جاري فتح خرائط جوجل...');
         }
 
         // =================================================================
-        // 8. البحث عن موقع (ميزة إضافية)
+        // 8. البحث عن موقع (Nominatim API)
         // =================================================================
         function searchLocation() {
             const query = document.getElementById('mapSearchInput').value.trim();
             if (!query) return;
             
-            // استخدام Nominatim API للبحث (مجاني)
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
                 .then(res => res.json())
                 .then(data => {
@@ -736,7 +720,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadPilgrims();
             updateDateTime();
-            console.log('✅ لوحة الإدارة - نسخة الخريطة المتطورة مع زر جوجل مابس');
+            console.log('✅ لوحة الإدارة - نسخة منفصلة مع رابط التطبيق الرئيسي');
         });
     </script>
 </body>
