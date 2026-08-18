@@ -372,7 +372,7 @@
     </div>
 
     <!-- =========================================================
-         مودال الخريطة
+         مودال الخريطة (مع الحقول المخفية التي يحتاجها الـ JS)
     ========================================================= -->
     <div class="modal-overlay" id="locationModal">
         <div class="modal-box map-modal" style="max-width:600px;padding:0;">
@@ -394,6 +394,12 @@
                     <button class="btn-google" id="googleMapsBtn" onclick="openInGoogleMaps()"><i class="fas fa-map"></i> جوجل مابس</button>
                     <button class="btn-save-location" onclick="saveLocation()"><i class="fas fa-check"></i> حفظ</button>
                 </div>
+            </div>
+            <!-- ★ هذه الحقول المخفية ضرورية لكي يعمل الـ JavaScript ★ -->
+            <div style="display:none;">
+                <input type="text" id="locLat">
+                <input type="text" id="locLng">
+                <span id="locPilgrimName"></span>
             </div>
         </div>
     </div>
@@ -626,14 +632,6 @@
                     marker = L.marker([lat, lng]).addTo(map);
                 });
 
-                // حفظ الإحداثيات في متغيرات عامة
-                window._tempLat = null;
-                window._tempLng = null;
-                map.on('click', function(e) {
-                    window._tempLat = e.latlng.lat;
-                    window._tempLng = e.latlng.lng;
-                });
-
             }, 300);
         }
 
@@ -658,7 +656,7 @@
         function openInGoogleMaps() {
             const lat = parseFloat(document.getElementById('locLat').value);
             const lng = parseFloat(document.getElementById('locLng').value);
-            if(!lat || !lng) { showToast('⚠️ لا يوجد موقع', true); return; }
+            if(!lat || !lng || isNaN(lat) || isNaN(lng)) { showToast('⚠️ لا يوجد موقع محدد', true); return; }
             window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank');
         }
 
@@ -704,7 +702,7 @@
         // =================================================================
         document.addEventListener('DOMContentLoaded', () => {
             loadPilgrims();
-            console.log('✅ لوحة إدارة حديثة (بدون شريط جانبي - بطاقات)');
+            console.log('✅ لوحة إدارة حديثة (بدون شريط جانبي - بطاقات) - تم إصلاح الخريطة');
         });
     </script>
 </body>
