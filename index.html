@@ -3,202 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>لوحة إدارة دليل الحاج</title>
-    
+    <title>إدارة الحجاج</title>
+    <!-- الخطوط -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- أيقونات -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet للخريطة -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
     <style>
         /* =================================================================
-           إعدادات عامة - بدون شريط جانبي
+           أساسيات
         ================================================================= */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', system-ui, sans-serif; }
-        :root { --primary: #075c52; --primary-dark: #043d36; --bg: #f4f7fc; --card-bg: #ffffff; --text: #1a2e35; --text-muted: #718096; --shadow: 0 4px 12px rgba(0,0,0,0.05); --radius: 16px; --gold: #c99625; --google-red: #ea4335; }
-        body { background: var(--bg); color: var(--text); padding: 0; }
+        :root {
+            --primary: #075c52;
+            --primary-dark: #043d36;
+            --primary-light: #e6f2ef;
+            --gold: #c99625;
+            --bg: #f4f7fc;
+            --card: #ffffff;
+            --text: #1a2e35;
+            --muted: #718096;
+            --shadow: 0 8px 25px rgba(0,0,0,0.04);
+            --radius: 20px;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            padding: 0 0 80px 0; /* مساحة للشريط السفلي */
+            min-height: 100vh;
+        }
 
         /* =================================================================
-           الشريط العلوي (بدلاً من الجانبي)
+           الشريط العلوي
         ================================================================= */
         .topbar {
             background: var(--primary-dark);
-            padding: 12px 16px;
+            padding: 14px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-            flex-wrap: wrap;
-            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .topbar .brand {
+        .topbar .logo {
             display: flex;
             align-items: center;
             gap: 10px;
             color: #fff;
+            font-weight: 800;
+            font-size: 20px;
         }
-        .topbar .brand i { font-size: 24px; color: var(--gold); }
-        .topbar .brand span { font-size: 18px; font-weight: 800; }
-        .topbar .actions {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .btn-sm {
+        .topbar .logo i { color: var(--gold); font-size: 28px; }
+        .topbar .actions { display: flex; gap: 8px; }
+        .topbar .actions button {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
             padding: 8px 14px;
             border-radius: 60px;
-            border: none;
-            font-weight: 700;
-            font-size: 13px;
+            font-weight: 600;
+            font-size: 14px;
             cursor: pointer;
             transition: 0.2s;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             gap: 6px;
-            text-decoration: none;
         }
-        .btn-sm.white { background: #ffffff22; color: #fff; border: 1px solid #ffffff33; }
-        .btn-sm.white:hover { background: #ffffff44; }
-        .btn-sm.primary { background: var(--gold); color: #fff; }
-        .btn-sm.primary:hover { background: #b8860b; transform: scale(1.02); }
-        .btn-sm.outline { background: transparent; border: 1px solid #e2e8f0; color: var(--text); }
-        .btn-sm.outline:hover { background: #f7fafc; }
+        .topbar .actions button:hover { background: rgba(255,255,255,0.2); }
+        .topbar .actions button.primary { background: var(--gold); color: #fff; }
+        .topbar .actions button.primary:hover { background: #b8860b; }
 
         /* =================================================================
-           المحتوى الرئيسي (كامل العرض)
+           المحتوى الرئيسي
         ================================================================= */
-        .main-content { padding: 16px; max-width: 1200px; margin: 0 auto; }
+        .main-content { max-width: 800px; margin: 0 auto; padding: 16px; }
 
-        /* =================================================================
-           بطاقات الإحصائيات
-        ================================================================= */
+        /* الإحصائيات */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         .stat-card {
-            background: var(--card-bg);
-            padding: 14px 16px;
+            background: var(--card);
+            padding: 14px 12px;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
-            border-right: 4px solid var(--primary);
+            text-align: center;
+            border-bottom: 4px solid var(--primary);
         }
-        .stat-card .label { font-size: 12px; color: var(--text-muted); }
-        .stat-card .value { font-size: 26px; font-weight: 800; margin: 2px 0; }
-        .stat-card.gold { border-right-color: var(--gold); }
+        .stat-card .num { font-size: 28px; font-weight: 800; color: var(--primary); }
+        .stat-card .label { font-size: 12px; color: var(--muted); }
+        .stat-card.gold { border-bottom-color: var(--gold); }
+        .stat-card.gold .num { color: var(--gold); }
 
-        /* =================================================================
-           شريط الأدوات
-        ================================================================= */
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 16px;
-            background: var(--card-bg);
-            padding: 10px 14px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-        }
-        .search-box {
-            display: flex;
-            align-items: center;
-            background: var(--bg);
+        /* شريط البحث */
+        .search-bar {
+            background: var(--card);
             border-radius: 60px;
-            padding: 0 14px;
-            flex: 1;
-            min-width: 160px;
+            padding: 6px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
         }
-        .search-box i { color: var(--text-muted); margin-left: 8px; }
-        .search-box input {
+        .search-bar i { color: var(--muted); font-size: 18px; }
+        .search-bar input {
             border: none;
             background: transparent;
-            padding: 10px 0;
+            padding: 12px 0;
             width: 100%;
-            font-size: 14px;
+            font-size: 15px;
             outline: none;
         }
-        .left-actions { display: flex; gap: 8px; }
 
         /* =================================================================
-           عرض البطاقات (Card View) - الأساسي الآن
+           بطاقات الحجاج (شكل تطبيق)
         ================================================================= */
-        .pilgrim-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
+        .pilgrim-list { display: flex; flex-direction: column; gap: 16px; }
+
         .pilgrim-card {
-            background: var(--card-bg);
+            background: var(--card);
             border-radius: var(--radius);
-            padding: 14px 16px;
+            padding: 16px;
             box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            border-right: 5px solid transparent;
             transition: 0.2s;
-            border-right: 4px solid transparent;
         }
         .pilgrim-card.has-location { border-right-color: var(--gold); }
-        .pilgrim-card .row {
+
+        .pilgrim-card .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 6px;
+            margin-bottom: 8px;
         }
-        .pilgrim-card .name-section {
+        .pilgrim-card .user {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
         .pilgrim-card .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            background: var(--primary);
-            color: #fff;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: var(--primary-light);
+            color: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 16px;
-            flex-shrink: 0;
+            font-size: 20px;
         }
-        .pilgrim-card .name { font-weight: 700; font-size: 16px; }
-        .pilgrim-card .code { font-family: monospace; background: var(--bg); padding: 2px 8px; border-radius: 6px; font-size: 13px; }
-        .pilgrim-card .detail { font-size: 13px; color: var(--text-muted); }
-        .pilgrim-card .detail i { width: 18px; color: var(--primary); }
-        .pilgrim-card .status-badge {
-            padding: 4px 12px;
-            border-radius: 60px;
+        .pilgrim-card .name { font-weight: 700; font-size: 18px; }
+        .pilgrim-card .code {
+            background: var(--bg);
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-family: monospace;
+        }
+        .pilgrim-card .badge {
             font-size: 12px;
             font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 30px;
             display: inline-flex;
             align-items: center;
             gap: 4px;
         }
-        .status-badge.active { background: #c6f6d5; color: #276749; }
-        .status-badge.inactive { background: #edf2f7; color: #4a5568; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-        .status-dot.green { background: #48bb78; }
-        .status-dot.gray { background: #a0aec0; }
+        .badge.active { background: #c6f6d5; color: #276749; }
+        .badge.inactive { background: #edf2f7; color: #4a5568; }
+        .badge .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .badge .dot.green { background: #48bb78; }
+        .badge .dot.gray { background: #a0aec0; }
+
+        .pilgrim-card .details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-size: 14px;
+            color: var(--muted);
+            margin: 8px 0;
+        }
+        .pilgrim-card .details span { display: flex; align-items: center; gap: 6px; }
+
         .pilgrim-card .actions {
             display: flex;
-            gap: 8px;
             flex-wrap: wrap;
-            margin-top: 4px;
+            gap: 8px;
+            margin-top: 10px;
         }
         .pilgrim-card .actions button {
             border: none;
-            padding: 8px 14px;
+            padding: 8px 16px;
             border-radius: 60px;
             font-weight: 600;
             font-size: 13px;
@@ -207,146 +210,294 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: var(--bg);
-            color: var(--text);
         }
-        .pilgrim-card .actions .loc-btn { background: #ebf8ff; color: #2b6cb0; }
-        .pilgrim-card .actions .edit-btn { background: #fefcbf; color: #d69e2e; }
-        .pilgrim-card .actions .del-btn { background: #fed7d7; color: #e53e3e; }
-        .pilgrim-card .actions .google-btn { background: #fff; border: 1.5px solid var(--google-red); color: var(--google-red); }
+        .pilgrim-card .actions .btn-loc { background: #ebf8ff; color: #2b6cb0; }
+        .pilgrim-card .actions .btn-edit { background: #fefcbf; color: #d69e2e; }
+        .pilgrim-card .actions .btn-del { background: #fed7d7; color: #e53e3e; }
+        .pilgrim-card .actions .btn-gmap { background: #fff; border: 1.5px solid #ea4335; color: #ea4335; }
         .pilgrim-card .actions button:active { transform: scale(0.95); }
 
         /* =================================================================
-           المودالات (كما هي لكن أفضل)
+           مودالات
         ================================================================= */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 2000; justify-content: center; align-items: center; padding: 16px; }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(6px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
         .modal-overlay.show { display: flex; }
-        .modal-box { background: var(--card-bg); border-radius: 24px; padding: 24px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; animation: modalIn 0.2s ease; }
-        @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        .modal-box .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .modal-box .modal-header h2 { color: var(--primary); font-size: 20px; }
-        .modal-box .modal-header .close-modal { background: none; border: none; font-size: 28px; color: var(--text-muted); cursor: pointer; }
+
+        .modal-box {
+            background: var(--card);
+            border-radius: 28px;
+            padding: 24px;
+            max-width: 480px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-box .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .modal-box .modal-header h2 { color: var(--primary); font-size: 22px; }
+        .modal-box .modal-header .close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: var(--muted);
+            cursor: pointer;
+        }
+
         .modal-box .form-group { margin-bottom: 14px; }
-        .modal-box .form-group label { display: block; font-weight: 600; font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
-        .modal-box .form-group input { width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; background: var(--bg); }
-        .modal-box .form-group input:focus { border-color: var(--primary); outline: none; background: #fff; }
+        .modal-box .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+        .modal-box .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 15px;
+            background: var(--bg);
+            transition: 0.2s;
+        }
+        .modal-box .form-group input:focus {
+            border-color: var(--primary);
+            outline: none;
+            background: #fff;
+        }
         .modal-box .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .modal-box .btn-save { width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: 60px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 8px; }
+        .modal-box .btn-save {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: 0.2s;
+        }
         .modal-box .btn-save:hover { background: var(--primary-dark); }
 
-        .map-modal .map-header { background: var(--primary-dark); color: #fff; padding: 12px 16px; border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center; }
-        .map-modal .map-header h2 { font-size: 18px; }
-        .map-modal .map-header .close-modal { color: #fff; background: none; border: none; font-size: 24px; }
-        .map-toolbar { padding: 10px; background: #f8fafc; display: flex; gap: 8px; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; }
-        .map-toolbar .search-input { flex: 1; padding: 8px 14px; border: 1px solid #e2e8f0; border-radius: 60px; font-size: 14px; min-width: 120px; }
-        .map-toolbar .btn-icon { background: var(--primary); color: #fff; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; }
-        .map-toolbar .btn-icon.gold { background: var(--gold); }
-        #locationMap { height: 280px; width: 100%; }
-        .map-footer { padding: 12px 16px; background: #fff; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-radius: 0 0 16px 16px; }
-        .map-footer .address-info { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; flex: 1; }
-        .map-footer .btn-group { display: flex; gap: 8px; }
-        .map-footer .btn-google { background: #fff; border: 1.5px solid var(--google-red); color: var(--google-red); padding: 6px 16px; border-radius: 60px; font-weight: 700; cursor: pointer; }
-        .map-footer .btn-google.disabled { opacity: 0.4; pointer-events: none; }
-        .map-footer .btn-save-location { background: var(--primary); color: #fff; border: none; padding: 6px 20px; border-radius: 60px; font-weight: 700; cursor: pointer; }
+        /* مودال الخريطة (مختلف قليلاً) */
+        .map-modal .map-header {
+            background: var(--primary-dark);
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .map-modal .map-header .close { color: #fff; background: none; border: none; font-size: 24px; cursor: pointer; }
+        .map-toolbar {
+            padding: 10px;
+            background: #f8fafc;
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+        .map-toolbar input {
+            flex: 1;
+            padding: 8px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 60px;
+            font-size: 14px;
+            min-width: 120px;
+        }
+        .map-toolbar button {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .map-toolbar button.gold { background: var(--gold); }
+        #locationMap { height: 280px; width: 100%; background: #e2e8f0; }
+        .map-footer {
+            padding: 12px 16px;
+            background: #fff;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-radius: 0 0 20px 20px;
+        }
+        .map-footer .addr { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; flex: 1; }
+        .map-footer .btns { display: flex; gap: 8px; }
+        .map-footer .btns .btn-gmap {
+            background: #fff;
+            border: 1.5px solid #ea4335;
+            color: #ea4335;
+            padding: 6px 16px;
+            border-radius: 60px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .map-footer .btns .btn-gmap.disabled { opacity: 0.4; pointer-events: none; }
+        .map-footer .btns .btn-save {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 6px 20px;
+            border-radius: 60px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* =================================================================
+           شريط سفلي (Bottom Nav)
+        ================================================================= */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 12px;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
+            z-index: 100;
+            border-top: 1px solid #e2e8f0;
+        }
+        .bottom-nav button {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            gap: 2px;
+        }
+        .bottom-nav button i { font-size: 22px; }
+        .bottom-nav button.active { color: var(--primary); }
+        .bottom-nav button:active { transform: scale(0.92); }
 
         /* =================================================================
            Toast
         ================================================================= */
-        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--text); color: #fff; padding: 10px 20px; border-radius: 60px; font-weight: 600; font-size: 14px; z-index: 9999; opacity: 0; transition: 0.3s; white-space: nowrap; max-width: 90%; }
+        #toast {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--text);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 9999;
+            opacity: 0;
+            transition: 0.3s;
+            pointer-events: none;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            max-width: 90%;
+            text-align: center;
+        }
         #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
         #toast.error { background: #b91c1c; }
 
         /* =================================================================
-           تحسينات للجوال
+           استجابة
         ================================================================= */
         @media (max-width: 600px) {
-            .topbar .brand span { font-size: 15px; }
-            .btn-sm { font-size: 11px; padding: 6px 10px; }
-            .main-content { padding: 10px; }
             .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-            .stat-card { padding: 10px 12px; }
-            .stat-card .value { font-size: 20px; }
-            .toolbar { flex-direction: column; align-items: stretch; }
-            .search-box { width: 100%; }
+            .stat-card .num { font-size: 22px; }
+            .topbar .logo { font-size: 16px; }
+            .topbar .actions button { font-size: 12px; padding: 6px 10px; }
+            .pilgrim-card .header { flex-wrap: wrap; gap: 8px; }
+            .pilgrim-card .details { gap: 10px; font-size: 13px; }
             .modal-box { padding: 16px; }
             .modal-box .form-row { grid-template-columns: 1fr; }
-            .pilgrim-card .row { flex-direction: column; align-items: stretch; gap: 6px; }
-            .pilgrim-card .name-section { justify-content: space-between; }
-            .pilgrim-card .actions { justify-content: center; }
-            .map-footer { flex-direction: column; }
-            .map-footer .btn-group { width: 100%; justify-content: center; }
-            #toast { font-size: 12px; padding: 8px 16px; white-space: normal; }
+            .map-footer { flex-direction: column; align-items: stretch; }
+            .map-footer .btns { justify-content: center; }
         }
         @media (max-width: 400px) {
             .stats-grid { grid-template-columns: 1fr; }
-            .topbar .actions .btn-sm { font-size: 10px; padding: 4px 8px; }
+            .pilgrim-card .actions button { font-size: 12px; padding: 6px 12px; }
         }
     </style>
 </head>
 <body>
 
     <!-- =========================================================
-         الشريط العلوي (بديل الشريط الجانبي)
+         الشريط العلوي
     ========================================================= -->
     <header class="topbar">
-        <div class="brand">
-            <i class="fas fa-kaaba"></i>
-            <span>إدارة الحجاج</span>
-        </div>
+        <div class="logo"><i class="fas fa-kaaba"></i> إدارة الحجاج</div>
         <div class="actions">
-            <a href="https://hussamhamami8-cmd.github.io/alhaj/" target="_blank" class="btn-sm white">
-                <i class="fas fa-external-link-alt"></i> التطبيق
-            </a>
-            <button class="btn-sm primary" onclick="openAddModal()">
-                <i class="fas fa-plus"></i> إضافة
-            </button>
-            <button class="btn-sm white" onclick="loadPilgrims()">
-                <i class="fas fa-sync-alt"></i>
-            </button>
+            <button onclick="loadPilgrims()"><i class="fas fa-sync-alt"></i></button>
+            <button class="primary" onclick="openAddModal()"><i class="fas fa-plus"></i> إضافة</button>
         </div>
     </header>
 
     <!-- =========================================================
          المحتوى الرئيسي
     ========================================================= -->
-    <main class="main-content" id="adminContent">
+    <main class="main-content" id="mainContent">
 
         <!-- الإحصائيات -->
         <div class="stats-grid">
-            <div class="stat-card">
-                <div class="label">إجمالي الحجاج</div>
-                <div class="value" id="totalPilgrims">0</div>
-            </div>
-            <div class="stat-card gold">
-                <div class="label">موقع محدد</div>
-                <div class="value" id="locatedPilgrims">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="label">آخر إضافة</div>
-                <div class="value" id="lastAdded">-</div>
-            </div>
+            <div class="stat-card"><div class="num" id="totalCount">0</div><div class="label">إجمالي الحجاج</div></div>
+            <div class="stat-card gold"><div class="num" id="locatedCount">0</div><div class="label">موقع محدد</div></div>
+            <div class="stat-card"><div class="num" id="lastAdded">-</div><div class="label">آخر إضافة</div></div>
         </div>
 
-        <!-- شريط البحث والأدوات -->
-        <div class="toolbar">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="بحث بالاسم أو الكود..." onkeyup="filterTable()">
-            </div>
-            <div class="left-actions">
-                <button class="btn-sm outline" onclick="exportCSV()"><i class="fas fa-file-csv"></i> CSV</button>
-                <button class="btn-sm outline" onclick="loadPilgrims()" style="border-color:var(--primary);color:var(--primary);">
-                    <i class="fas fa-sync-alt"></i> تحديث
-                </button>
-            </div>
+        <!-- البحث -->
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="ابحث بالاسم أو الكود..." oninput="filterTable()">
         </div>
 
-        <!-- عرض البطاقات (بديل الجدول) -->
-        <div id="pilgrimGrid" class="pilgrim-grid">
-            <div style="text-align:center;padding:40px;color:var(--text-muted);">جاري تحميل البيانات...</div>
+        <!-- قائمة الحجاج -->
+        <div id="pilgrimList" class="pilgrim-list">
+            <div style="text-align:center;padding:40px;color:var(--muted);">جاري التحميل...</div>
         </div>
-
     </main>
+
+    <!-- =========================================================
+         الشريط السفلي (Bottom Nav)
+    ========================================================= -->
+    <nav class="bottom-nav">
+        <button class="active"><i class="fas fa-users"></i> الحجاج</button>
+        <button onclick="document.getElementById('searchInput').focus()"><i class="fas fa-search"></i> بحث</button>
+        <button onclick="exportCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+        <button onclick="location.reload()"><i class="fas fa-sync-alt"></i> تحديث</button>
+    </nav>
 
     <!-- =========================================================
          مودال الإضافة / التعديل
@@ -354,8 +505,8 @@
     <div class="modal-overlay" id="addEditModal">
         <div class="modal-box">
             <div class="modal-header">
-                <h2 id="modalTitle"><i class="fas fa-user-plus"></i> إضافة حاج</h2>
-                <button class="close-modal" onclick="closeModal('addEditModal')">&times;</button>
+                <h2 id="modalTitle">إضافة حاج</h2>
+                <button class="close" onclick="closeModal('addEditModal')">&times;</button>
             </div>
             <input type="hidden" id="editId">
             <div class="form-row">
@@ -367,35 +518,32 @@
                 <div class="form-group"><label>الجنسية</label><input type="text" id="inputNationality" placeholder="سعودي"></div>
             </div>
             <div class="form-group"><label>معرف المستخدم (اختياري)</label><input type="text" id="inputUserId" placeholder="اتركه فارغاً"></div>
-            <button class="btn-save" onclick="savePilgrim()"><i class="fas fa-save"></i> حفظ البيانات</button>
+            <button class="btn-save" onclick="savePilgrim()"><i class="fas fa-save"></i> حفظ</button>
         </div>
     </div>
 
     <!-- =========================================================
-         مودال الخريطة (مع الحقول المخفية التي يحتاجها الـ JS)
+         مودال الخريطة
     ========================================================= -->
     <div class="modal-overlay" id="locationModal">
         <div class="modal-box map-modal" style="max-width:600px;padding:0;">
             <div class="map-header">
                 <h2><i class="fas fa-map-marked-alt"></i> موقع الحاج</h2>
-                <button class="close-modal" onclick="closeModal('locationModal')">&times;</button>
+                <button class="close" onclick="closeModal('locationModal')">&times;</button>
             </div>
             <div class="map-toolbar">
-                <input type="text" class="search-input" id="mapSearchInput" placeholder="ابحث عن مكان..." onkeydown="if(event.key==='Enter') searchLocation()">
-                <button class="btn-icon gold" onclick="searchLocation()"><i class="fas fa-search"></i></button>
+                <input type="text" id="mapSearchInput" placeholder="ابحث عن مكان..." onkeydown="if(event.key==='Enter') searchLocation()">
+                <button class="gold" onclick="searchLocation()"><i class="fas fa-search"></i></button>
             </div>
             <div id="locationMap"></div>
             <div class="map-footer">
-                <div class="address-info">
-                    <i class="fas fa-location-dot"></i>
-                    <span id="selectedAddress">اختر موقعاً على الخريطة</span>
-                </div>
-                <div class="btn-group">
-                    <button class="btn-google" id="googleMapsBtn" onclick="openInGoogleMaps()"><i class="fas fa-map"></i> جوجل مابس</button>
-                    <button class="btn-save-location" onclick="saveLocation()"><i class="fas fa-check"></i> حفظ</button>
+                <div class="addr"><i class="fas fa-location-dot"></i> <span id="selectedAddress">اختر موقعاً على الخريطة</span></div>
+                <div class="btns">
+                    <button class="btn-gmap disabled" id="googleMapsBtn" onclick="openInGoogleMaps()"><i class="fas fa-map"></i> خرائط</button>
+                    <button class="btn-save" onclick="saveLocation()"><i class="fas fa-check"></i> حفظ</button>
                 </div>
             </div>
-            <!-- ★ هذه الحقول المخفية ضرورية لكي يعمل الـ JavaScript ★ -->
+            <!-- حقول مخفية للـ JS -->
             <div style="display:none;">
                 <input type="text" id="locLat">
                 <input type="text" id="locLng">
@@ -410,7 +558,7 @@
     <div id="toast"></div>
 
     <!-- =========================================================
-         المكتبات والكود
+         المكتبات
     ========================================================= -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -424,11 +572,11 @@
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let allPilgrims = [];
-        let currentLocationPilgrimId = null;
+        let currentPilgrimId = null;
         let map = null, marker = null;
 
         // =================================================================
-        // 2. تحميل البيانات وعرضها (بطاقات)
+        // 2. دوال مساعدة
         // =================================================================
         function showToast(msg, isError = false) {
             const t = document.getElementById('toast');
@@ -438,69 +586,78 @@
             t._timer = setTimeout(() => t.classList.remove('show'), 3500);
         }
 
+        function esc(str) { if(!str) return ''; return String(str).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[m] || m); }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+            if(id === 'locationModal' && map) { map.remove(); map = null; }
+        }
+
+        // =================================================================
+        // 3. تحميل وعرض البيانات
+        // =================================================================
         async function loadPilgrims() {
-            const grid = document.getElementById('pilgrimGrid');
-            grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>';
+            const list = document.getElementById('pilgrimList');
+            list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>';
 
             try {
                 const { data, error } = await supabase.from('pilgrims').select('*').order('id', { ascending: false });
                 if (error) throw new Error(error.message);
                 allPilgrims = data || [];
-                renderCards(allPilgrims);
+                renderList(allPilgrims);
                 updateStats(allPilgrims);
             } catch (e) {
-                grid.innerHTML = `<div style="text-align:center;padding:40px;color:#e53e3e;"><i class="fas fa-exclamation-triangle"></i> ${e.message}</div>`;
+                list.innerHTML = `<div style="text-align:center;padding:40px;color:#e53e3e;">⚠️ ${e.message}</div>`;
                 showToast('❌ ' + e.message, true);
             }
         }
 
-        function renderCards(list) {
-            const grid = document.getElementById('pilgrimGrid');
+        function renderList(list) {
+            const container = document.getElementById('pilgrimList');
             if (!list || list.length === 0) {
-                grid.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);">
-                    <i class="fas fa-user-slash" style="font-size:40px;display:block;margin-bottom:10px;"></i> لا يوجد حجاج مسجلين
+                container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">
+                    <i class="fas fa-user-slash" style="font-size:48px;display:block;margin-bottom:12px;"></i> لا يوجد حجاج مسجلين
                 </div>`;
                 return;
             }
 
-            grid.innerHTML = list.map((p, i) => {
+            container.innerHTML = list.map(p => {
                 const hasLoc = p.latitude && p.longitude;
                 const date = p.created_at ? new Date(p.created_at).toLocaleDateString('ar-SA') : '-';
                 const initial = p.name ? p.name.charAt(0) : 'ح';
                 return `
                     <div class="pilgrim-card ${hasLoc ? 'has-location' : ''}">
-                        <div class="row">
-                            <div class="name-section">
+                        <div class="header">
+                            <div class="user">
                                 <div class="avatar">${initial}</div>
-                                <span class="name">${esc(p.name)}</span>
-                                <span class="code">${esc(p.code)}</span>
+                                <div>
+                                    <div class="name">${esc(p.name)}</div>
+                                    <span class="code">${esc(p.code)}</span>
+                                </div>
                             </div>
-                            <span class="status-badge ${hasLoc?'active':'inactive'}">
-                                <span class="status-dot ${hasLoc?'green':'gray'}"></span>
-                                ${hasLoc ? 'محدد' : 'غير محدد'}
+                            <span class="badge ${hasLoc ? 'active' : 'inactive'}">
+                                <span class="dot ${hasLoc ? 'green' : 'gray'}"></span> ${hasLoc ? 'محدد' : 'غير محدد'}
                             </span>
                         </div>
-                        <div class="row" style="justify-content:flex-start;gap:12px;font-size:13px;color:var(--text-muted);">
+                        <div class="details">
                             <span><i class="fas fa-phone"></i> ${esc(p.phone||'-')}</span>
                             <span><i class="fas fa-flag"></i> ${esc(p.nationality||'-')}</span>
                             <span><i class="far fa-calendar"></i> ${date}</span>
                         </div>
                         <div class="actions">
-                            <button class="loc-btn" onclick="openLocationModal('${p.id}','${esc(p.name)}')"><i class="fas fa-map-pin"></i> موقع</button>
-                            ${hasLoc ? `<button class="google-btn" onclick="openInGoogleMapsDirect(${p.latitude},${p.longitude})"><i class="fas fa-map"></i> خرائط</button>` : ''}
-                            <button class="edit-btn" onclick="openEditModal('${p.id}','${esc(p.name)}','${esc(p.code)}','${esc(p.phone||'')}','${esc(p.nationality||'')}','${esc(p.user_id||'')}')"><i class="fas fa-edit"></i> تعديل</button>
-                            <button class="del-btn" onclick="deletePilgrim('${p.id}','${esc(p.name)}')"><i class="fas fa-trash"></i> حذف</button>
+                            <button class="btn-loc" onclick="openLocationModal('${p.id}','${esc(p.name)}')"><i class="fas fa-map-pin"></i> موقع</button>
+                            ${hasLoc ? `<button class="btn-gmap" onclick="openInGoogleMapsDirect(${p.latitude},${p.longitude})"><i class="fas fa-map"></i> خرائط</button>` : ''}
+                            <button class="btn-edit" onclick="openEditModal('${p.id}','${esc(p.name)}','${esc(p.code)}','${esc(p.phone||'')}','${esc(p.nationality||'')}','${esc(p.user_id||'')}')"><i class="fas fa-edit"></i> تعديل</button>
+                            <button class="btn-del" onclick="deletePilgrim('${p.id}','${esc(p.name)}')"><i class="fas fa-trash"></i> حذف</button>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        function esc(t) { if(!t) return ''; return String(t).replace(/[&<>"]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[m] || m)); }
-
         function updateStats(data) {
-            document.getElementById('totalPilgrims').textContent = data.length;
-            document.getElementById('locatedPilgrims').textContent = data.filter(p=>p.latitude&&p.longitude).length;
+            document.getElementById('totalCount').textContent = data.length;
+            document.getElementById('locatedCount').textContent = data.filter(p=>p.latitude&&p.longitude).length;
             if(data.length && data[0].created_at) {
                 document.getElementById('lastAdded').textContent = new Date(data[0].created_at).toLocaleDateString('ar-SA');
             } else {
@@ -510,8 +667,8 @@
 
         function filterTable() {
             const q = document.getElementById('searchInput').value.trim().toLowerCase();
-            if(!q) return renderCards(allPilgrims);
-            renderCards(allPilgrims.filter(p =>
+            if(!q) return renderList(allPilgrims);
+            renderList(allPilgrims.filter(p =>
                 p.name.toLowerCase().includes(q) ||
                 p.code.toLowerCase().includes(q) ||
                 (p.phone && p.phone.includes(q)) ||
@@ -520,17 +677,17 @@
         }
 
         // =================================================================
-        // 3. الإضافة والتعديل والحذف
+        // 4. إضافة / تعديل / حذف
         // =================================================================
         function openAddModal() {
-            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-plus"></i> إضافة حاج';
+            document.getElementById('modalTitle').textContent = '➕ إضافة حاج';
             document.getElementById('editId').value = '';
             ['inputName','inputCode','inputPhone','inputNationality','inputUserId'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('addEditModal').classList.add('show');
         }
 
         function openEditModal(id, name, code, phone, nationality, userId) {
-            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> تعديل حاج';
+            document.getElementById('modalTitle').textContent = '✏️ تعديل حاج';
             document.getElementById('editId').value = id;
             document.getElementById('inputName').value = name;
             document.getElementById('inputCode').value = code;
@@ -538,11 +695,6 @@
             document.getElementById('inputNationality').value = nationality;
             document.getElementById('inputUserId').value = userId;
             document.getElementById('addEditModal').classList.add('show');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('show');
-            if(id === 'locationModal' && map) { map.remove(); map = null; }
         }
 
         async function savePilgrim() {
@@ -578,28 +730,26 @@
         }
 
         // =================================================================
-        // 4. الخريطة – عرض موقع الحاج وزر خرائط جوجل
+        // 5. الخريطة وخرائط جوجل
         // =================================================================
         function openInGoogleMapsDirect(lat, lng) {
-            if (lat && lng) {
-                window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank');
-            }
+            if(lat && lng) window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank');
         }
 
         function openLocationModal(id, name) {
-            currentLocationPilgrimId = id;
+            currentPilgrimId = id;
             document.getElementById('selectedAddress').textContent = 'جاري تحميل الموقع...';
             document.getElementById('googleMapsBtn').classList.add('disabled');
             document.getElementById('locationModal').classList.add('show');
 
             setTimeout(() => {
-                if (map) map.remove();
+                if(map) map.remove();
                 map = L.map('locationMap').setView([21.4225, 39.8262], 6);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(map);
 
                 supabase.from('pilgrim_locations').select('*').eq('pilgrim_id', id).maybeSingle()
                     .then(({ data }) => {
-                        if (data?.latitude && data?.longitude) {
+                        if(data?.latitude && data?.longitude) {
                             const lat = parseFloat(data.latitude);
                             const lng = parseFloat(data.longitude);
                             document.getElementById('locLat').value = lat;
@@ -610,9 +760,9 @@
                             marker = L.marker([lat, lng], {
                                 icon: L.divIcon({
                                     className: 'custom-marker',
-                                    html: '<i class="fas fa-user-circle" style="font-size:36px;color:#075c52;"></i>',
-                                    iconSize: [36, 36],
-                                    iconAnchor: [18, 36]
+                                    html: '<i class="fas fa-user-circle" style="font-size:40px;color:#075c52;"></i>',
+                                    iconSize: [40, 40],
+                                    iconAnchor: [20, 40]
                                 })
                             }).addTo(map);
                             L.circle([lat, lng], { color: '#c99625', fillColor: '#c99625', fillOpacity: 0.1, radius: 40 }).addTo(map);
@@ -622,13 +772,12 @@
                     });
 
                 map.on('click', function(e) {
-                    const lat = e.latlng.lat;
-                    const lng = e.latlng.lng;
+                    const lat = e.latlng.lat, lng = e.latlng.lng;
                     document.getElementById('locLat').value = lat.toFixed(6);
                     document.getElementById('locLng').value = lng.toFixed(6);
                     document.getElementById('selectedAddress').textContent = `📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
                     document.getElementById('googleMapsBtn').classList.remove('disabled');
-                    if (marker) map.removeLayer(marker);
+                    if(marker) map.removeLayer(marker);
                     marker = L.marker([lat, lng]).addTo(map);
                 });
 
@@ -639,10 +788,10 @@
             const lat = parseFloat(document.getElementById('locLat').value);
             const lng = parseFloat(document.getElementById('locLng').value);
             if(isNaN(lat)||isNaN(lng)) { showToast('⚠️ اختر موقعاً على الخريطة', true); return; }
-            if(!currentLocationPilgrimId) { showToast('⚠️ خطأ', true); return; }
+            if(!currentPilgrimId) { showToast('⚠️ خطأ', true); return; }
             try {
                 const { error } = await supabase.from('pilgrim_locations').upsert({
-                    pilgrim_id: currentLocationPilgrimId,
+                    pilgrim_id: currentPilgrimId,
                     latitude: lat, longitude: lng,
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'pilgrim_id' });
@@ -662,32 +811,36 @@
 
         function searchLocation() {
             const query = document.getElementById('mapSearchInput').value.trim();
-            if (!query) return;
+            if(!query) return;
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
                 .then(res => res.json())
                 .then(data => {
-                    if (data?.length > 0) {
+                    if(data && data.length > 0) {
                         const lat = parseFloat(data[0].lat), lng = parseFloat(data[0].lon);
-                        if (map) {
+                        if(map) {
                             map.setView([lat, lng], 14);
-                            if (marker) map.removeLayer(marker);
+                            if(marker) map.removeLayer(marker);
                             marker = L.marker([lat, lng]).addTo(map);
                             document.getElementById('locLat').value = lat.toFixed(6);
                             document.getElementById('locLng').value = lng.toFixed(6);
                             document.getElementById('selectedAddress').textContent = `📍 ${data[0].display_name}`;
+                            showToast('✅ تم العثور');
                         }
                     } else { showToast('⚠️ لم يتم العثور', true); }
-                }).catch(() => showToast('❌ خطأ في البحث', true));
+                })
+                .catch(() => showToast('❌ خطأ في البحث', true));
         }
 
         // =================================================================
-        // 5. تصدير CSV
+        // 6. تصدير CSV
         // =================================================================
         function exportCSV() {
-            if(!allPilgrims?.length) { showToast('لا توجد بيانات', true); return; }
+            if(!allPilgrims || allPilgrims.length === 0) { showToast('لا توجد بيانات', true); return; }
             let csv = "الاسم,الكود,الهاتف,الجنسية,المعرف,التاريخ,الموقع\n";
             allPilgrims.forEach(p => {
-                csv += `"${p.name}","${p.code}","${p.phone||''}","${p.nationality||''}","${p.user_id||''}","${p.created_at?new Date(p.created_at).toLocaleDateString('ar-SA'):''}","${p.latitude&&p.longitude?'محدد':'غير محدد'}"\n`;
+                const hasLoc = p.latitude && p.longitude ? 'محدد' : 'غير محدد';
+                const date = p.created_at ? new Date(p.created_at).toLocaleDateString('ar-SA') : '-';
+                csv += `"${p.name}","${p.code}","${p.phone||''}","${p.nationality||''}","${p.user_id||''}","${date}","${hasLoc}"\n`;
             });
             const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
@@ -698,12 +851,12 @@
         }
 
         // =================================================================
-        // 6. التشغيل
+        // 7. التشغيل
         // =================================================================
         document.addEventListener('DOMContentLoaded', () => {
             loadPilgrims();
-            console.log('✅ لوحة إدارة حديثة (بدون شريط جانبي - بطاقات) - تم إصلاح الخريطة');
+            console.log('✅ واجهة التطبيق الجديدة - شغالة');
         });
     </script>
 </body>
-</html>
+            </html>
